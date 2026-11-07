@@ -1,0 +1,42 @@
+# Préstamos de biblioteca — Matías Nicolás Echeveste Cardozo
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: biblioteca
+          POSTGRES_PASSWORD: biblioteca
+          POSTGRES_DB: biblioteca
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U biblioteca" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aplicar el esquema
+        run: psql postgres://biblioteca:biblioteca@localhost:5432/biblioteca -v ON_ERROR_STOP=1 -f sql/001_esquema.sql
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t prestamos-biblioteca-api .

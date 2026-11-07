@@ -1,0 +1,29 @@
+# Préstamos de biblioteca — Matías Nicolás Echeveste Cardozo
+# Uso: copiar .env.example a .env, completar valores y ejecutar `docker compose up --build`.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: biblioteca
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?definir POSTGRES_PASSWORD en .env}
+      POSTGRES_DB: biblioteca
+    volumes:
+      - datos:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biblioteca"]
+      interval: 5s
+      retries: 10
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://biblioteca:${POSTGRES_PASSWORD}@db:5432/biblioteca
+      JWT_SECRETO: ${JWT_SECRETO:?definir JWT_SECRETO en .env}
+      CLAVE_BIBLIOTECARIO: ${CLAVE_BIBLIOTECARIO:?definir CLAVE_BIBLIOTECARIO en .env}
+    ports:
+      - "3000:3000"
+volumes:
+  datos:
