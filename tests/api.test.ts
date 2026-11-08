@@ -89,3 +89,13 @@ describe('préstamos', () => {
     expect((await request(app).get('/nada')).status).toBe(404)
   })
 })
+
+describe('pedidos mal formados', () => {
+  it('responde 400 ante JSON inválido y 413 ante cuerpos demasiado grandes, sin errores internos', async () => {
+    const malformado = await request(app).post('/sesion').set('Content-Type', 'application/json').send('{"clave":')
+    expect(malformado.status).toBe(400)
+    const grande = await request(app).post('/sesion').send({ clave: 'x'.repeat(20_000) })
+    expect(grande.status).toBe(413)
+    expect(grande.body.error).toBe('El cuerpo del pedido es demasiado grande')
+  })
+})

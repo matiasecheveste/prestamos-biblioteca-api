@@ -37,6 +37,11 @@ function iguales(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y)
 }
 
+function esErrorDelCliente(err: unknown): err is { status: number } {
+  const status = (err as { status?: unknown })?.status
+  return typeof status === 'number' && status >= 400 && status < 500
+}
+
 export function crearApp({ repositorio: repo, jwtSecreto, claveBibliotecario, hoy = () => hoyEn() }: Configuracion) {
   const app = express()
   app.disable('x-powered-by')
@@ -121,6 +126,9 @@ export function crearApp({ repositorio: repo, jwtSecreto, claveBibliotecario, ho
       res.status(err.estado).json({ error: err.message })
     } else if (err instanceof SyntaxError) {
       res.status(400).json({ error: 'JSON mal formado' })
+    } else if (esErrorDelCliente(err)) {
+      // Errores de body-parser (cuerpo demasiado grande, codificación no admitida…): conservan su código 4xx.
+      res.status(err.status).json({ error: err.status === 413 ? 'El cuerpo del pedido es demasiado grande' : 'Pedido inválido' })
     } else {
       console.error(err)
       res.status(500).json({ error: 'Error interno' })
