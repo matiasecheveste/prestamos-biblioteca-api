@@ -16,6 +16,11 @@ export class ErrorDeNegocio extends Error {
   }
 }
 
+/** Fecha AAAA-MM-DD en la zona horaria de la biblioteca (por defecto Montevideo), sin depender de la del servidor. */
+export function hoyEn(zona = 'America/Montevideo', ahora = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: zona, year: 'numeric', month: '2-digit', day: '2-digit' }).format(ahora)
+}
+
 export function sumarDias(fecha: string, dias: number): string {
   const d = new Date(`${fecha}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() + dias)

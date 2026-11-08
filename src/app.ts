@@ -6,7 +6,7 @@ import { timingSafeEqual } from 'node:crypto'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
-import { DIAS_PRESTAMO, ErrorDeNegocio, MAXIMO_PRESTAMOS_ABIERTOS, multa, sumarDias } from './dominio/reglas.js'
+import { DIAS_PRESTAMO, ErrorDeNegocio, hoyEn, MAXIMO_PRESTAMOS_ABIERTOS, multa, sumarDias } from './dominio/reglas.js'
 import { cedulaValida, isbnValido } from './dominio/validaciones.js'
 import type { Repositorio } from './repositorio.js'
 
@@ -37,7 +37,7 @@ function iguales(a: string, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y)
 }
 
-export function crearApp({ repositorio: repo, jwtSecreto, claveBibliotecario, hoy = () => new Date().toISOString().slice(0, 10) }: Configuracion) {
+export function crearApp({ repositorio: repo, jwtSecreto, claveBibliotecario, hoy = () => hoyEn() }: Configuracion) {
   const app = express()
   app.disable('x-powered-by')
   app.use(express.json({ limit: '10kb' }))

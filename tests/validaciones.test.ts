@@ -3,7 +3,7 @@
  * Pruebas unitarias de validaciones y reglas.
  */
 import { describe, expect, it } from 'vitest'
-import { diasDeAtraso, multa, sumarDias } from '../src/dominio/reglas.js'
+import { diasDeAtraso, hoyEn, multa, sumarDias } from '../src/dominio/reglas.js'
 import { cedulaValida, isbnValido } from '../src/dominio/validaciones.js'
 
 describe('cédula uruguaya', () => {
@@ -35,5 +35,13 @@ describe('fechas y multas', () => {
     expect(diasDeAtraso('2026-03-01', '2026-02-28')).toBe(0)
     expect(diasDeAtraso('2026-03-01', '2026-03-04')).toBe(3)
     expect(multa('2026-03-01', '2026-03-04')).toBe(30)
+  })
+})
+
+describe('hoyEn', () => {
+  it('usa la fecha de Montevideo aunque el servidor esté en UTC', () => {
+    // 8 de noviembre 01:30 UTC = 7 de noviembre 22:30 en Uruguay (UTC−3).
+    expect(hoyEn('America/Montevideo', new Date('2026-11-08T01:30:00Z'))).toBe('2026-11-07')
+    expect(hoyEn('UTC', new Date('2026-11-08T01:30:00Z'))).toBe('2026-11-08')
   })
 })
